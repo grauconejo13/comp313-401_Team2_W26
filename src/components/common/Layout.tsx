@@ -54,6 +54,16 @@ function Layout({ children }: LayoutProps) {
             Ghost
           </Link>
         </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/income">
+            Income
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/expenses">
+            Expenses
+          </Link>
+        </li>
       </ul>
       <ul className="navbar-nav ms-3 border-start border-light border-opacity-50 ps-3">
         <li className="nav-item">
