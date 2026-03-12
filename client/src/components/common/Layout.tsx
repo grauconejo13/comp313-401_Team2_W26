@@ -59,6 +59,16 @@ function Layout({ children }: LayoutProps) {
             Income
           </Link>
         </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/transactions">
+            Transactions
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/debts">
+            Debts
+          </Link>
+        </li>
         {token ? (
           <>
             <li className="nav-item">
