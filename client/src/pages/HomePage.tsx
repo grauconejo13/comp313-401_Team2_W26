@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
-import Dashboard from "./DashboardPage";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function HomePage() {
-  const isLoggedIn = false; // later replace with auth logic
+  const { token } = useAuth();
+  const isLoggedIn = !!token;
 
   if (!isLoggedIn) {
     return (
@@ -21,7 +23,7 @@ function HomePage() {
     );
   }
 
-  return <Dashboard />;
+  return <Navigate to="/dashboard" />;
 }
 
 export default HomePage;
