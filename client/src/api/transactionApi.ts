@@ -10,13 +10,39 @@ export interface Transaction {
   description: string;
   category?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
-export const getTransactions = async (token: string): Promise<Transaction[]> => {
+export const getTransactions = async (
+  token?: string
+): Promise<Transaction[]> => {
+  const authToken = token || localStorage.getItem("clearpath_token");
+
   const res = await axios.get<{ transactions: Transaction[] }>(API_URL, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
   });
+
   return res.data.transactions;
+};
+
+export const editTransaction = async (
+  id: string,
+  data: {
+    amount?: number;
+    description?: string;
+    category?: string;
+    reason: string;
+  },
+  token: string
+): Promise<void> => {
+  await axios.put(`${API_URL}/${id}`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
 };
 
 export const deleteTransaction = async (
@@ -27,9 +53,8 @@ export const deleteTransaction = async (
   await axios.delete(`${API_URL}/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    data: { reason }
+    data: { reason },
   });
 };
-
