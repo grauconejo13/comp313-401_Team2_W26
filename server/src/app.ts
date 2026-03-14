@@ -8,6 +8,7 @@ import debtRoutes from './routes/debt.routes';
 import authRoutes from './routes/auth.routes';
 import incomeRoutes from './routes/income.routes';
 import expenseRoutes from './routes/expense.routes';
+import userRoutes from "./routes/user.routes";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/debts', debtRoutes);
 app.use('/api/expense', expenseRoutes);
+app.use("/api/user", userRoutes);
 
 app.use(errorHandler);
 
