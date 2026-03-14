@@ -41,12 +41,12 @@ const CURRENCIES = [
   { code: "ARS", label: "🇦🇷 ARS – Argentine Peso" }
 ];
 
-const emptyForm: DebtRequest & { dueDate?: string; notes?: string } = {
+const emptyForm = {
   label: "",
   counterparty: "",
-  amount: 0,
+  amount: "" as string | number,
   currency: "LKR",
-  direction: "owed_by_me",
+  direction: "owed_by_me" as const,
   dueDate: "",
   notes: ""
 };
@@ -59,16 +59,10 @@ const DebtPage = () => {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<DebtRequest & { dueDate?: string; notes?: string }>(emptyForm);
+  const [editForm, setEditForm] = useState<typeof emptyForm>(emptyForm);
 
-  const [form, setForm] = useState<DebtRequest & { dueDate?: string; notes?: string }>({
-    label: "",
-    counterparty: "",
-    amount: 0,
-    currency: "LKR",
-    direction: "owed_by_me",
-    dueDate: "",
-    notes: ""
+  const [form, setForm] = useState<typeof emptyForm>({
+    ...emptyForm
   });
 
   useEffect(() => {
@@ -92,7 +86,7 @@ const DebtPage = () => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "amount" ? Number(value) : value
+      [name]: value
     }));
   };
 
@@ -101,8 +95,26 @@ const DebtPage = () => {
     if (!token) return;
     setError(null);
 
-    if (!form.label.trim() || !form.amount || form.amount <= 0) {
-      setError("Label and positive amount are required");
+    if (!form.label.trim()) {
+      setError("Label is required");
+      return;
+    }
+    if (!form.counterparty?.trim()) {
+      setError("Counterparty is required");
+      return;
+    }
+    const amountStr = String(form.amount ?? "").trim();
+    if (amountStr === "") {
+      setError("Amount is required");
+      return;
+    }
+    const amountNum = Number(amountStr);
+    if (Number.isNaN(amountNum)) {
+      setError("Amount must be a number");
+      return;
+    }
+    if (amountNum <= 0) {
+      setError("Amount must be greater than 0");
       return;
     }
 
@@ -111,7 +123,7 @@ const DebtPage = () => {
       const payload: DebtRequest = {
         label: form.label.trim(),
         counterparty: form.counterparty?.trim() || undefined,
-        amount: form.amount,
+        amount: amountNum,
         currency: form.currency,
         direction: form.direction,
         dueDate: form.dueDate || undefined,
@@ -120,13 +132,7 @@ const DebtPage = () => {
       const created = await addDebt(payload, token);
       setDebts((prev) => [created, ...prev]);
       setForm({
-        label: "",
-        counterparty: "",
-        amount: 0,
-        currency: "LKR",
-        direction: "owed_by_me",
-        dueDate: "",
-        notes: ""
+        ...emptyForm
       });
     } catch (e: any) {
       const msg =
@@ -144,7 +150,7 @@ const DebtPage = () => {
     setEditForm({
       label: d.label,
       counterparty: d.counterparty ?? "",
-      amount: d.amount,
+      amount: String(d.amount),
       currency: d.currency,
       direction: d.direction,
       dueDate: d.dueDate ? d.dueDate.slice(0, 10) : "",
@@ -159,14 +165,32 @@ const DebtPage = () => {
     const { name, value } = e.target;
     setEditForm((prev) => ({
       ...prev,
-      [name]: name === "amount" ? Number(value) : value
+      [name]: value
     }));
   };
 
   const saveEdit = async () => {
     if (!token || !editingId) return;
-    if (!editForm.label?.trim() || !editForm.amount || editForm.amount <= 0) {
-      setError("Label and positive amount required");
+    if (!editForm.label?.trim()) {
+      setError("Label is required");
+      return;
+    }
+    if (!editForm.counterparty?.trim()) {
+      setError("Counterparty is required");
+      return;
+    }
+    const editAmountStr = String(editForm.amount ?? "").trim();
+    if (editAmountStr === "") {
+      setError("Amount is required");
+      return;
+    }
+    const editAmountNum = Number(editAmountStr);
+    if (Number.isNaN(editAmountNum)) {
+      setError("Amount must be a number");
+      return;
+    }
+    if (editAmountNum <= 0) {
+      setError("Amount must be greater than 0");
       return;
     }
     setSaving(true);
@@ -176,7 +200,7 @@ const DebtPage = () => {
         {
           label: editForm.label.trim(),
           counterparty: editForm.counterparty?.trim() || undefined,
-          amount: editForm.amount,
+          amount: editAmountNum,
           currency: editForm.currency,
           direction: editForm.direction,
           dueDate: editForm.dueDate || undefined,
@@ -234,17 +258,17 @@ const DebtPage = () => {
               placeholder="Counterparty"
               value={form.counterparty}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="col-md-2">
             <input
               className="form-control"
               type="number"
-              min={0.01}
               step={0.01}
               name="amount"
               placeholder="Amount"
-              value={form.amount || ""}
+              value={form.amount}
               onChange={handleChange}
               required
             />
@@ -315,6 +339,7 @@ const DebtPage = () => {
               <th>Amount</th>
               <th>Direction</th>
               <th>Due date</th>
+              <th>Notes</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -329,6 +354,7 @@ const DebtPage = () => {
                 </td>
                 <td>{d.direction === "owed_by_me" ? "I owe" : "Owes me"}</td>
                 <td>{d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "-"}</td>
+                <td>{d.notes || "-"}</td>
                 <td>
                   <button
                     type="button"
@@ -371,7 +397,7 @@ const DebtPage = () => {
                 </div>
                 <div className="mb-2">
                   <label className="form-label">Amount</label>
-                  <input className="form-control" type="number" min={0.01} step={0.01} name="amount" value={editForm.amount || ""} onChange={handleEditChange} />
+                  <input className="form-control" type="number" step={0.01} name="amount" value={editForm.amount} onChange={handleEditChange} />
                 </div>
                 <div className="mb-2">
                   <label className="form-label">Currency</label>

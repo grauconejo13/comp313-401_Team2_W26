@@ -37,6 +37,10 @@ export const createDebt = async (
       errors.push('Label is required');
     }
 
+    if (!counterparty || !counterparty.trim()) {
+      errors.push('Counterparty is required');
+    }
+
     if (amount == null || Number.isNaN(Number(amount))) {
       errors.push('Amount must be a number');
     } else if (Number(amount) <= 0) {
@@ -128,7 +132,10 @@ export const updateDebt = async (
       if (!label || !String(label).trim()) errors.push('Label cannot be empty');
       else debt.label = String(label).trim();
     }
-    if (counterparty !== undefined) debt.counterparty = String(counterparty).trim() || undefined;
+    if (counterparty !== undefined) {
+      if (!counterparty || !String(counterparty).trim()) errors.push('Counterparty is required');
+      else debt.counterparty = String(counterparty).trim();
+    }
     if (amount !== undefined) {
       const n = Number(amount);
       if (isNaN(n) || n <= 0) errors.push('Amount must be a positive number');
