@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/api/income";
-
+const API_URL = `${import.meta.env.VITE_API_URL}/api/income`;
 export interface IncomeRequest {
   amount: number;
   reason: string;
@@ -35,8 +34,14 @@ export const getIncomes = async (): Promise<Income[]> => {
   try {
     const response = await axios.get(API_URL);
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.message || "Failed to fetch incomes";
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
+    throw (
+      error.response?.data?.message ||
+      "Failed to fetch income"
+    );
+  }
+  throw "Something went wrong";
   }
 };
 
@@ -45,9 +50,17 @@ export const editIncome = async (id: string, data: IncomeRequest) => {
   try {
     const response = await axios.put(`${API_URL}/${id}`, data);
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.message || "Failed to update income";
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
+    throw (
+      error.response?.data?.message ||
+      "Failed to add update income"
+    );
   }
+
+  throw "Something went wrong";
+}
+  
 };
 
 // Delete income
@@ -55,7 +68,18 @@ export const deleteIncome = async (id: string) => {
   try {
     const response = await axios.delete(`${API_URL}/${id}`);
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.message || "Failed to delete income";
   }
+  catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
+    throw (
+      error.response?.data?.message ||
+      "Failed to delete income"
+    );
+  }
+
+  throw "Something went wrong";
+}
+  /*} catch (error: any) {
+    throw error.response?.data?.message || "Failed to delete income";
+  }*/
 };

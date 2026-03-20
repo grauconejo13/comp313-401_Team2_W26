@@ -12,7 +12,15 @@ import userRoutes from "./routes/user.routes";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://financial-tracker-kappa-wine.vercel.app/",
+    ],
+    credentials: true,
+  }),
+);
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 
