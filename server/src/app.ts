@@ -16,11 +16,14 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://financial-tracker-kappa-wine.vercel.app/",
+      "https://financial-tracker-kappa-wine.vercel.app",
     ],
+     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   }),
 );
+
+app.options("*", cors());
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 
