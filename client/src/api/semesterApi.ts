@@ -1,22 +1,21 @@
-export async function saveSemester(startDate: string, endDate: string) {
+const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
-  const response = await fetch("/api/semester/set", {
+export async function saveSemester(startDate: string, endDate: string) {
+  const response = await fetch(`${API_BASE}/api/semester/set`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       startDate,
-      endDate
-    })
+      endDate,
+    }),
   });
 
   return response.json();
 }
 
 export async function getSemester(userId: number) {
-
-  const response = await fetch(`/api/semester/${userId}`);
-
+  const response = await fetch(`${API_BASE}/api/semester/${userId}`);
   return response.json();
 }

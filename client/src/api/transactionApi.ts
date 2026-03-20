@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-const API_URL = `${API_BASE}/transactions`;
+const API_URL = `${API_BASE}/api/transactions`;
 
 export interface Transaction {
   _id: string;
@@ -18,13 +18,22 @@ export const getTransactions = async (
 ): Promise<Transaction[]> => {
   const authToken = token || localStorage.getItem("clearpath_token");
 
-  const res = await axios.get<{ transactions: Transaction[] }>(API_URL, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });
+  if (!authToken) {
+    throw new Error("No auth token found");
+  }
 
-  return res.data.transactions;
+  try {
+    const res = await axios.get<{ transactions: Transaction[] }>(API_URL, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    return res.data.transactions;
+  } catch (error) {
+    console.error("Failed to fetch transactions:", error);
+    return []; // 👈 prevents crash
+  }
 };
 
 export const editTransaction = async (

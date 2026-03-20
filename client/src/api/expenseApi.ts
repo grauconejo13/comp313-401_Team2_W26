@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-const API_URL = `${API_BASE}/expense`;
+const API_URL = `${API_BASE}/api/expense`;
 
 export interface ExpenseRequest {
   amount: number;
@@ -16,13 +16,10 @@ export const addExpense = async (data: ExpenseRequest) => {
     const response = await axios.post(API_URL, data);
     return response.data;
   } catch (error: unknown) {
-  if (axios.isAxiosError(error)) {
-    throw (
-      error.response?.data?.message ||
-      "Failed to add expense"
-    );
-  }
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data?.message || "Failed to add expense";
+    }
 
-  throw "Something went wrong";
-}
+    throw "Something went wrong";
+  }
 };
