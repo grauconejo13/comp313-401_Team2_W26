@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { addExpense } from "../api/expenseApi";
 
+
 const categories = [
   "Food",
   "Transport",
@@ -110,9 +111,7 @@ const ExpensePage = () => {
           onChange={(e) => setDate(e.target.value)}
         />
 
-        <button className="btn btn-primary">
-          Add Expense
-        </button>
+        <button className="btn btn-primary">Add Expense</button>
       </form>
     </div>
   );

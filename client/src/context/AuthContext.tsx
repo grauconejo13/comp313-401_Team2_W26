@@ -1,10 +1,16 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
-import * as authApi from '../api/authApi';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import * as authApi from "../api/authApi";
 
 interface User {
   id: string;
   email: string;
-  role: 'student' | 'admin';
+  role: "student" | "admin";
 }
 
 interface AuthContextType {
@@ -16,8 +22,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-const TOKEN_KEY = 'clearpath_token';
-const USER_KEY = 'clearpath_user';
+const TOKEN_KEY = "clearpath_token";
+const USER_KEY = "clearpath_user";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -26,29 +32,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const loadUser = useCallback(async () => {
-  const t = localStorage.getItem(TOKEN_KEY);
+    const t = localStorage.getItem(TOKEN_KEY);
 
-  if (!t) {
-    setUser(null);
-    setToken(null);
-    setLoading(false);
-    return;
-  }
+    if (!t) {
+      setUser(null);
+      setToken(null);
+      setLoading(false);
+      return;
+    }
 
-  try {
-    setToken(t); // 👈 set early
+    try {
+      setToken(t); // 👈 set early
 
-    const { user: u } = await authApi.getCurrentUser(t);
-    setUser(u);
-  } catch {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    setToken(null);
-    setUser(null);
-  } finally {
-    setLoading(false);
-  }
-}, []);
+      const { user: u } = await authApi.getCurrentUser(t);
+      setUser(u);
+    } catch {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadUser();
@@ -81,9 +87,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, loading, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+}

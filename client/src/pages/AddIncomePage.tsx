@@ -22,7 +22,7 @@ const AddIncomePage = () => {
     }
 
     try {
-     // await addIncome({ amount: Number(amount), reason, date });
+      // await addIncome({ amount: Number(amount), reason, date });
       setMessage("Income added successfully!");
       setAmount("");
       setReason("");

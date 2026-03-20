@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const API_URL = `${API_BASE}/transactions`;
 
 export interface Transaction {
@@ -14,7 +14,7 @@ export interface Transaction {
 }
 
 export const getTransactions = async (
-  token?: string
+  token?: string,
 ): Promise<Transaction[]> => {
   const authToken = token || localStorage.getItem("clearpath_token");
 
@@ -35,7 +35,7 @@ export const editTransaction = async (
     category?: string;
     reason: string;
   },
-  token: string
+  token: string,
 ): Promise<void> => {
   await axios.put(`${API_URL}/${id}`, data, {
     headers: {
@@ -48,7 +48,7 @@ export const editTransaction = async (
 export const deleteTransaction = async (
   id: string,
   reason: string,
-  token: string
+  token: string,
 ): Promise<void> => {
   await axios.delete(`${API_URL}/${id}`, {
     headers: {
