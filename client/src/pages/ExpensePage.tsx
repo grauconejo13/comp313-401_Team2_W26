@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { addExpense } from "../api/expenseApi";
-
+import { useState, useEffect } from "react";
+import {
+  addExpense,
+  getExpenses,
+  deleteExpense,
+} from "../api/expenseApi";
 
 const categories = [
   "Food",
@@ -21,9 +24,27 @@ const ExpensePage = () => {
   const [classification, setClassification] = useState("");
   const [reason, setReason] = useState("");
   const [date, setDate] = useState("");
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [expenses, setExpenses] = useState<any[]>([]);
+
+  //Load expenses on page load
+  useEffect(() => {
+    loadExpenses();
+  }, []);
+
+  const loadExpenses = async () => {
+    try {
+      const data = await getExpenses();
+      setExpenses(data);
+    } catch (err) {
+      console.error("Failed to load expenses", err);
+    }
+  };
+
+  //Add expense
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
@@ -44,13 +65,27 @@ const ExpensePage = () => {
       });
 
       setMessage("Expense added successfully!");
+
+      // reset form
       setAmount("");
       setCategory("");
       setClassification("");
       setReason("");
       setDate("");
+
+      loadExpenses(); 
     } catch (err: any) {
       setError(err || "Failed to add expense.");
+    }
+  };
+
+  // Delete expense
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteExpense(id);
+      loadExpenses();
+    } catch (err) {
+      console.error("Delete failed", err);
     }
   };
 
@@ -113,6 +148,38 @@ const ExpensePage = () => {
 
         <button className="btn btn-primary">Add Expense</button>
       </form>
+
+      {/*  EXPENSE LIST */}
+      <h3 className="mt-4">Your Expenses</h3>
+
+      {expenses.length === 0 ? (
+        <p>No expenses yet.</p>
+      ) : (
+        <ul className="list-group">
+          {expenses.map((exp) => (
+            <li
+              key={exp._id}
+              className="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div>
+                <strong>${exp.amount}</strong> - {exp.category} ({exp.classification})
+                <br />
+                <small>
+                  {exp.reason} |{" "}
+                  {new Date(exp.date).toLocaleDateString()}
+                </small>
+              </div>
+
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => handleDelete(exp._id)}
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

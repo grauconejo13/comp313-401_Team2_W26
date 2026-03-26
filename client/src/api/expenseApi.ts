@@ -1,7 +1,12 @@
 import axios from "axios";
 
-const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-const API_URL = `${API_BASE}/api/expense`;
+const API_URL = `${import.meta.env.VITE_API_URL}/expense`;
+
+const getAuthHeaders = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
 
 export interface ExpenseRequest {
   amount: number;
@@ -22,4 +27,22 @@ export const addExpense = async (data: ExpenseRequest) => {
 
     throw "Something went wrong";
   }
+};
+
+//Get all expenses
+export const getExpenses = async () => {
+  const response = await axios.get(API_URL, getAuthHeaders());
+  return response.data;
+};
+
+//Delete expense
+export const deleteExpense = async (id: string) => {
+  const response = await axios.delete(`${API_URL}/${id}`, getAuthHeaders());
+  return response.data;
+};
+
+//Update expense
+export const updateExpense = async (id: string, data: ExpenseRequest) => {
+  const response = await axios.put(`${API_URL}/${id}`, data, getAuthHeaders());
+  return response.data;
 };
