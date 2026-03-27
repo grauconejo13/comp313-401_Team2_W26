@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth.routes";
 import incomeRoutes from "./routes/income.routes";
 import expenseRoutes from "./routes/expense.routes";
 import userRoutes from "./routes/user.routes";
+import templateRoutes from "./routes/template.routes";
+import goalRoutes from "./routes/goal.routes";
 
 const app = express();
 
@@ -31,7 +33,6 @@ app.get("/", (_req, res) => {
   res.send("ClearPath API is running");
 });
 
-app.use("/api/income", incomeRoutes);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
@@ -42,6 +43,9 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/debts", debtRoutes);
 app.use("/api/expense", expenseRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/income", incomeRoutes);
+app.use("/api/templates", templateRoutes);
+app.use("/api/goals", goalRoutes);
 
 app.use(errorHandler);
 
