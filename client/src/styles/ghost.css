@@ -1,0 +1,75 @@
+.ghost-habit-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ghost-habit-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+  border: 1px solid rgba(91, 95, 151, 0.2);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.ghost-habit-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.ghost-habit-card__cat {
+  font-weight: 700;
+  color: #312e81;
+  font-size: 1.05rem;
+}
+
+.ghost-habit-card__sub {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.ghost-habit-card__gap {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #5b5f97;
+}
+
+.ghost-habit-card__bar-track {
+  height: 6px;
+  border-radius: 6px;
+  background: rgba(91, 95, 151, 0.12);
+  margin-top: 0.85rem;
+  overflow: hidden;
+}
+
+.ghost-habit-card__bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4cc9f0, #7c3aed 60%, #5b5f97);
+}
+
+.ghost-bubble {
+  margin-top: 0.85rem;
+}
+
+.ghost-signals {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #1e1b4b 0%, #312e81 55%, #3730a3 100%);
+  color: #e2e8f0;
+}
+
+.ghost-signals__orbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+}
+
+.ghost-orb {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), rgba(167, 139, 250, 0.4) 45%, rgba(91, 95, 151, 0.9));
+}
