@@ -16,6 +16,7 @@ import ExpensePage from "./pages/ExpensePage";
 import TransactionsPage from "./pages/TransactionsPage";
 import DebtPage from "./pages/DebtPage";
 import CurrencySettingsPage from "./pages/CurrencySettingsPage";
+import SavingsPage from "./pages/SavingsPage";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
             <Route path="/debts" element={<ProtectedRoute><DebtPage /></ProtectedRoute>} />
             <Route path="/currency-settings" element={<ProtectedRoute><CurrencySettingsPage /></ProtectedRoute>} />
+            <Route path="/savings" element={<ProtectedRoute><SavingsPage /></ProtectedRoute>}/>
           </Routes>
         </Layout>
       </Router>

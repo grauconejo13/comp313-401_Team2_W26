@@ -37,3 +37,7 @@ export const getCurrentUser = async (token: string): Promise<{ user: User }> => 
   });
   return data;
 };
+
+
+// del later
+console.log("API BASE:", API_BASE);

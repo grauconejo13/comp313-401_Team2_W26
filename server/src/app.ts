@@ -11,6 +11,7 @@ import expenseRoutes from "./routes/expense.routes";
 import userRoutes from "./routes/user.routes";
 import templateRoutes from "./routes/template.routes";
 import goalRoutes from "./routes/goal.routes";
+import savingsRoutes from "./routes/savings.routes";
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/income", incomeRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/goals", goalRoutes);
+app.use("/api/savings", savingsRoutes);
 
 app.use(errorHandler);
 
