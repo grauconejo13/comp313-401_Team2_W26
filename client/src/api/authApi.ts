@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/$/, "");
 export interface User {
   id: string;
   email: string;
@@ -39,5 +39,3 @@ export const getCurrentUser = async (token: string): Promise<{ user: User }> => 
 };
 
 
-// del later
-console.log("API BASE:", API_BASE);
