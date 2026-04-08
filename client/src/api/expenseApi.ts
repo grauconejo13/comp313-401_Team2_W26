@@ -1,11 +1,10 @@
 import axios from "axios";
 
-const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/$/, "");
-const API_URL = `${API_BASE}/api/expense`;
+const API_URL = `${import.meta.env.VITE_API_URL}/expense`;
 
 const getAuthHeaders = () => ({
   headers: {
-    Authorization: `Bearer ${localStorage.getItem("clearpath_token")}`,
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
   },
 });
 
