@@ -1,156 +1,292 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, KeyboardEvent, useMemo } from "react";
+import type { IconType } from "react-icons";
+import {
+  MdTrendingUp,
+  MdTrendingDown,
+  MdReceiptLong,
+  MdSavings,
+} from "react-icons/md";
+import { FaWallet, FaCreditCard } from "react-icons/fa";
 import { getSemester } from "../../api/semesterApi";
+import { getTransactions } from "../../api/transactionApi";
+import { useAuth } from "../../context/AuthContext";
 import TransactionList from "./TransactionList";
+
+type DashCard = {
+  title: string;
+  description: string;
+  route: string;
+  Icon: IconType;
+  stripeClass: string;
+};
+
+const cards: DashCard[] = [
+  {
+    title: "Income",
+    description: "View and manage your income streams",
+    route: "/income",
+    Icon: MdTrendingUp,
+    stripeClass: "cp-stripe-income",
+  },
+  {
+    title: "Expenses",
+    description: "Track where your money goes",
+    route: "/expense",
+    Icon: MdTrendingDown,
+    stripeClass: "cp-stripe-expense",
+  },
+  {
+    title: "Transactions",
+    description: "Full history and edits in one place",
+    route: "/transactions",
+    Icon: MdReceiptLong,
+    stripeClass: "cp-stripe-transactions",
+  },
+  {
+    title: "Budget",
+    description: "Plan limits and stay on track",
+    route: "/budget",
+    Icon: FaWallet,
+    stripeClass: "cp-stripe-budget",
+  },
+  {
+    title: "Debts",
+    description: "See balances and paydown progress",
+    route: "/debts",
+    Icon: FaCreditCard,
+    stripeClass: "cp-stripe-debts",
+  },
+  {
+    title: "Savings",
+    description: "Goals and set-asides",
+    route: "/savings",
+    Icon: MdSavings,
+    stripeClass: "cp-stripe-savings",
+  },
+];
+
+function formatMoney(n: number) {
+  const sign = n < 0 ? "−" : "";
+  return `${sign}$${Math.abs(n).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
 
 function StudentDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
   const [semesterStart, setSemesterStart] = useState<string | null>(null);
   const [semesterEnd, setSemesterEnd] = useState<string | null>(null);
 
+  const [txLoading, setTxLoading] = useState(true);
+  const [txError, setTxError] = useState("");
 
-  const cards = [
-    {
-      title: "Income",
-      description: "View and manage your income",
-      route: "/income"
-    },
-    {
-      title: "Expenses",
-      description: "Track where your money goes",
-      route: "/expense"
-    },
-    {
-      title: "Transactions",
-      description: "See all financial activity",
-      route: "/transactions"
-    },
-    {
-      title: "Budget",
-      description: "Plan and manage spending",
-      route: "/budget"
-    },
-    {
-      title: "Debts",
-      description: "Track what you owe",
-      route: "/debts"
-    },
-    {
-      title: "Savings",
-      description: "Manage your savings and goals",
-      route: "/savings"
-    }
-  ];
+  const [incomeTotal, setIncomeTotal] = useState(0);
+  const [expenseTotal, setExpenseTotal] = useState(0);
+  const [txCount, setTxCount] = useState(0);
 
- useEffect(() => {
-  async function loadSemester() {
-    try {
-      const semester = await getSemester(1);
+  const firstName = useMemo(() => {
+    const raw = user?.name?.trim() || user?.email?.split("@")[0] || "";
+    const first = raw.split(/\s+/)[0];
+    return first || "there";
+  }, [user?.name, user?.email]);
 
-      if (semester?.startDate && semester?.endDate) {
+  const netFlow = incomeTotal - expenseTotal;
 
-        setSemesterStart(semester.startDate);
-        setSemesterEnd(semester.endDate);
+  useEffect(() => {
+    async function loadSemester() {
+      try {
+        const semester = await getSemester(1);
+
+        if (semester?.startDate && semester?.endDate) {
+          setSemesterStart(semester.startDate);
+          setSemesterEnd(semester.endDate);
+
+          const today = new Date();
+          const end = new Date(semester.endDate);
+
+          const diff = end.getTime() - today.getTime();
+          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+          setDaysRemaining(days);
+        }
+      } catch {
+        const mockStart = "2026-01-10";
+        const mockEnd = "2026-05-15";
+
+        setSemesterStart(mockStart);
+        setSemesterEnd(mockEnd);
 
         const today = new Date();
-        const end = new Date(semester.endDate);
+        const end = new Date(mockEnd);
 
         const diff = end.getTime() - today.getTime();
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
         setDaysRemaining(days);
       }
-
-    } catch (err) {
-      console.warn("Using mock semester data");
-
-      const mockStart = "2026-01-10";
-      const mockEnd = "2026-05-15";
-
-      setSemesterStart(mockStart);
-      setSemesterEnd(mockEnd);
-
-      const today = new Date();
-      const end = new Date(mockEnd);
-
-      const diff = end.getTime() - today.getTime();
-      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-      setDaysRemaining(days);
     }
-  }
 
-  loadSemester();
-}, []);
+    loadSemester();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setTxError("");
+      setTxLoading(true);
+      try {
+        const list = await getTransactions();
+        if (cancelled) return;
+        let inc = 0;
+        let exp = 0;
+        for (const t of list) {
+          const a = Number(t.amount) || 0;
+          if (t.type === "income") inc += a;
+          else exp += a;
+        }
+        setIncomeTotal(inc);
+        setExpenseTotal(exp);
+        setTxCount(list.length);
+      } catch (e) {
+        if (!cancelled) {
+          setTxError("Could not load activity summary.");
+          setIncomeTotal(0);
+          setExpenseTotal(0);
+          setTxCount(0);
+        }
+      } finally {
+        if (!cancelled) setTxLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const go = (route: string) => navigate(route);
+
+  const onCardKeyDown =
+    (route: string) =>
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        go(route);
+      }
+    };
 
   return (
-    <div className="container py-4" style={{ background: "var(--bg)" }}>
-      <h2 className="mb-4" style={{ color: "var(--text)" }}>
-        Dashboard
-      </h2>
-
-    {daysRemaining !== null && semesterStart && semesterEnd && (
-      <div
-        className="mb-4"
-        style={{
-          background: "#ffffff",
-          borderRadius: "12px",
-          padding: "20px",
-          borderLeft: "5px solid var(--secondary)"
-        }}
-      >
-        <h5 style={{ color: "var(--primary)" }}>
-          Current Semester
-        </h5>
-
-        <p style={{ color: "var(--text)", opacity: 0.7 }}>
-          {new Date(semesterStart).toLocaleDateString()} –{" "}
-          {new Date(semesterEnd).toLocaleDateString()}
+    <div className="pb-2">
+      <header className="mb-4 mb-lg-5">
+        <p className="text-muted small fw-semibold text-uppercase cp-label-overline mb-2">
+          Overview
         </p>
+        <h1 className="cp-page-title mb-3">
+          Hi, {firstName}
+        </h1>
+        <p className="cp-page-lead mb-0">
+          Here’s a snapshot of your semester and money movement. Add data in each
+          area to make this dashboard more insightful over time.
+        </p>
+      </header>
 
-        <h3 style={{ color: "var(--text)" }}>
-          {daysRemaining > 0
-            ? `${daysRemaining} days remaining`
-            : "Semester ended"}
-        </h3>
-      </div>
-    )}
+      {txError && (
+        <div className="alert alert-warning small py-2 mb-4" role="status">
+          {txError}
+        </div>
+      )}
 
-      {/* Navigation Cards */}
-      <div className="row g-4">
-        {cards.map((card) => (
-          <div key={card.title} className="col-md-4">
-            <div
-              onClick={() => navigate(card.route)}
-              style={{
-                cursor: "pointer",
-                borderRadius: "12px",
-                padding: "24px",
-                background: "#ffffff",
-                border: "1px solid #e5e7eb",
-                borderLeft: "5px solid var(--accent)",
-                transition: "all 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 20px rgba(0,0,0,0.08)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <h4 style={{ color: "var(--primary)" }}>{card.title}</h4>
-              <p style={{ color: "var(--text)", opacity: 0.7 }}>
-                {card.description}
-              </p>
+      <section className="mb-4 mb-lg-5" aria-label="Summary">
+        <h2 className="h5 fw-bold mb-3">Activity summary</h2>
+        <p className="text-muted small mb-3">
+          Totals from your logged transactions (same source as the table below).
+        </p>
+        <div className="cp-kpi-grid">
+          <div className="cp-kpi-card">
+            <div className="cp-kpi-label">Income logged</div>
+            <div className={`cp-kpi-value ${txLoading ? "text-muted" : "cp-kpi-pos"}`}>
+              {txLoading ? "…" : formatMoney(incomeTotal)}
             </div>
           </div>
-        ))}
-      </div>
+          <div className="cp-kpi-card">
+            <div className="cp-kpi-label">Expenses logged</div>
+            <div className={`cp-kpi-value ${txLoading ? "text-muted" : "cp-kpi-neg"}`}>
+              {txLoading ? "…" : formatMoney(expenseTotal)}
+            </div>
+          </div>
+          <div className="cp-kpi-card">
+            <div className="cp-kpi-label">Net (income − expenses)</div>
+            <div
+              className={`cp-kpi-value ${txLoading ? "text-muted" : ""} ${
+                netFlow >= 0 ? "cp-kpi-pos" : "cp-kpi-neg"
+              }`}
+            >
+              {txLoading ? "…" : formatMoney(netFlow)}
+            </div>
+          </div>
+          <div className="cp-kpi-card">
+            <div className="cp-kpi-label">Transactions</div>
+            <div className={`cp-kpi-value ${txLoading ? "text-muted" : ""}`}>
+              {txLoading ? "…" : txCount.toLocaleString()}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {daysRemaining !== null && semesterStart && semesterEnd && (
+        <section className="mb-4 mb-lg-5" aria-label="Semester">
+          <h2 className="h5 fw-bold mb-3">Semester</h2>
+          <div className="cp-semester-banner">
+            <div className="cp-semester-label">Current semester</div>
+            <p className="mb-2 fw-semibold" style={{ color: "var(--cp-primary)" }}>
+              {new Date(semesterStart).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}{" "}
+              –{" "}
+              {new Date(semesterEnd).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+            <p className="cp-page-title mb-0" style={{ fontSize: "1.35rem" }}>
+              {daysRemaining > 0
+                ? `${daysRemaining} days remaining`
+                : "Semester ended"}
+            </p>
+          </div>
+        </section>
+      )}
+
+      <section className="mb-2" aria-label="Shortcuts">
+        <h2 className="h5 fw-bold mb-3">Quick actions</h2>
+        <div className="row g-3 g-md-4 mb-4">
+          {cards.map(({ title, description, route, Icon, stripeClass }) => (
+            <div key={title} className="col-md-6 col-xl-4">
+              <div
+                role="button"
+                tabIndex={0}
+                className={`cp-card-interactive h-100 ${stripeClass}`}
+                onClick={() => go(route)}
+                onKeyDown={onCardKeyDown(route)}
+                aria-label={`Open ${title}: ${description}`}
+              >
+                <div className="cp-dash-icon" aria-hidden>
+                  <Icon />
+                </div>
+                <h3 className="cp-dash-title">{title}</h3>
+                <p className="cp-dash-desc">{description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <TransactionList />
     </div>

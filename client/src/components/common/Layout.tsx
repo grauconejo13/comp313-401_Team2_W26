@@ -1,26 +1,42 @@
 import { ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { MdMenu } from "react-icons/md";
 import {
-  MdDashboard,
-  MdTrendingUp,
-  MdReceiptLong,
-  MdSavings,
-  MdCurrencyExchange,
-} from "react-icons/md";
-import {
-  FaGhost,
-  FaCreditCard,
   FaUserCircle,
   FaSignOutAlt,
-  FaWallet,
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { MAIN_NAV_ITEMS } from "../../config/appNav";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-const iconStyle = { fontSize: "1.15rem", flexShrink: 0 as const };
+function SidebarNavLinks({ mobile }: { mobile?: boolean }) {
+  const dismiss = mobile ? { "data-bs-dismiss": "offcanvas" as const } : {};
+
+  return (
+    <nav className={mobile ? "d-flex flex-column gap-1" : "cp-sidebar-nav d-flex flex-column gap-1 flex-grow-1"}>
+      {MAIN_NAV_ITEMS.map(({ to, label, Icon }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={to === "/dashboard"}
+          {...dismiss}
+          className={({ isActive }) =>
+            [
+              "cp-sidebar-link d-flex align-items-center gap-3 text-decoration-none",
+              isActive ? "active" : "",
+            ].join(" ")
+          }
+        >
+          <Icon className="cp-sidebar-icon flex-shrink-0" aria-hidden />
+          <span>{label}</span>
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
 
 function Layout({ children }: LayoutProps) {
   const { user, token, logout } = useAuth();
@@ -33,167 +49,172 @@ function Layout({ children }: LayoutProps) {
 
   const displayName = user?.name?.trim() ? user.name.trim() : user?.email ?? "";
 
+  /* ——— Public layout (marketing / auth) ——— */
+  if (!token) {
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <nav className="navbar navbar-expand-lg navbar-dark cp-navbar">
+          <div className="container px-3 px-lg-4">
+            <Link className="navbar-brand" to="/">
+              ClearPath
+            </Link>
+            <button
+              className="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span className="navbar-toggler-icon" />
+            </button>
+            <div className="collapse navbar-collapse" id="navbarNav">
+              <ul className="navbar-nav ms-auto">
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">
+                    Log in
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/register">
+                    Register
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+
+        <main className="container px-3 px-lg-4 cp-main flex-grow-1">{children}</main>
+
+        <footer className="cp-footer text-center mt-auto">
+          <div className="container px-3">
+            <small>© {new Date().getFullYear()} ClearPath</small>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  /* ——— Authenticated: sidebar + content ——— */
   return (
-    <div className="option2 d-flex flex-column min-vh-100">
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div className="container">
-          <Link className="navbar-brand fw-bold" to="/">
+    <div className="cp-app-shell d-flex min-vh-100 w-100">
+      <aside
+        className="cp-sidebar d-none d-lg-flex flex-column flex-shrink-0"
+        aria-label="Main navigation"
+      >
+        <Link to="/dashboard" className="cp-sidebar-brand text-decoration-none">
+          <span className="cp-sidebar-logo">ClearPath</span>
+          <span className="cp-sidebar-tagline">Finances</span>
+        </Link>
+
+        <SidebarNavLinks />
+
+        <div className="cp-sidebar-footer mt-auto pt-3">
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `cp-sidebar-link cp-sidebar-link-subtle d-flex align-items-center gap-3 text-decoration-none ${isActive ? "active" : ""}`
+            }
+          >
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt=""
+                className="rounded-circle cp-sidebar-avatar flex-shrink-0"
+              />
+            ) : (
+              <FaUserCircle className="cp-sidebar-icon flex-shrink-0" aria-hidden />
+            )}
+            <span className="text-truncate">{displayName || "Profile"}</span>
+          </NavLink>
+          <button
+            type="button"
+            className="cp-sidebar-logout btn w-100 d-flex align-items-center justify-content-center gap-2 mt-2"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt aria-hidden />
+            <span>Log out</span>
+          </button>
+        </div>
+      </aside>
+
+      <div className="cp-app-main d-flex flex-column flex-grow-1 min-vh-100 min-w-0">
+        {/* Mobile header + offcanvas menu */}
+        <header className="cp-topbar-mobile d-flex d-lg-none align-items-center justify-content-between gap-3 px-3 py-2">
+          <Link to="/dashboard" className="cp-topbar-brand text-decoration-none fw-bold">
             ClearPath
           </Link>
-
           <button
-            className="navbar-toggler"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
+            className="btn cp-btn-icon d-flex align-items-center justify-content-center"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#cpNavDrawer"
+            aria-controls="cpNavDrawer"
+            aria-label="Open menu"
           >
-            <span className="navbar-toggler-icon"></span>
+            <MdMenu size={24} aria-hidden />
           </button>
+        </header>
 
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto align-items-lg-center">
-              {token && (
-                <>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/dashboard"
-                    >
-                      <MdDashboard style={iconStyle} aria-hidden />
-                      <span>Dashboard</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/budget"
-                    >
-                      <FaWallet style={iconStyle} aria-hidden />
-                      <span>Budget</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/ghost"
-                    >
-                      <FaGhost style={iconStyle} aria-hidden />
-                      <span>Ghost</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/income"
-                    >
-                      <MdTrendingUp style={iconStyle} aria-hidden />
-                      <span>Income</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/transactions"
-                    >
-                      <MdReceiptLong style={iconStyle} aria-hidden />
-                      <span>Transactions</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/debts"
-                    >
-                      <FaCreditCard style={iconStyle} aria-hidden />
-                      <span>Debts</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/savings"
-                    >
-                      <MdSavings style={iconStyle} aria-hidden />
-                      <span>Savings</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/currency-settings"
-                    >
-                      <MdCurrencyExchange style={iconStyle} aria-hidden />
-                      <span>Currency</span>
-                    </Link>
-                  </li>
-                </>
-              )}
-              {token ? (
-                <>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link d-flex align-items-center gap-1"
-                      to="/profile"
-                      title="Profile settings"
-                    >
-                      {user?.avatar ? (
-                        <img
-                          src={user.avatar}
-                          alt=""
-                          className="rounded-circle border border-light flex-shrink-0"
-                          style={{ width: 26, height: 26, objectFit: "cover" }}
-                        />
-                      ) : (
-                        <FaUserCircle style={iconStyle} aria-hidden />
-                      )}
-                      <span
-                        className="text-truncate d-inline-block"
-                        style={{ maxWidth: "10rem" }}
-                      >
-                        {displayName}
-                      </span>
-                    </Link>
-                  </li>
-                  <li className="nav-item ms-lg-1">
-                    <button
-                      type="button"
-                      className="btn btn-outline-light btn-sm d-flex align-items-center gap-1"
-                      onClick={handleLogout}
-                    >
-                      <FaSignOutAlt aria-hidden />
-                      <span>Logout</span>
-                    </button>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/login">
-                      Login
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/register">
-                      Register
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
+        <div
+          className="offcanvas offcanvas-start cp-offcanvas"
+          tabIndex={-1}
+          id="cpNavDrawer"
+          aria-labelledby="cpNavDrawerLabel"
+        >
+          <div className="offcanvas-header border-bottom">
+            <h5 className="offcanvas-title fw-bold mb-0" id="cpNavDrawerLabel">
+              Menu
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              data-bs-dismiss="offcanvas"
+              aria-label="Close"
+            />
+          </div>
+          <div className="offcanvas-body d-flex flex-column">
+            <SidebarNavLinks mobile />
+            <div className="mt-auto pt-3 border-top">
+              <Link
+                className="cp-sidebar-link d-flex align-items-center gap-3 text-decoration-none"
+                to="/profile"
+                data-bs-dismiss="offcanvas"
+              >
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt=""
+                    className="rounded-circle cp-sidebar-avatar flex-shrink-0"
+                  />
+                ) : (
+                  <FaUserCircle className="cp-sidebar-icon flex-shrink-0" aria-hidden />
+                )}
+                <span className="text-truncate">{displayName || "Profile"}</span>
+              </Link>
+              <button
+                type="button"
+                className="cp-sidebar-logout btn w-100 d-flex align-items-center justify-content-center gap-2 mt-2"
+                data-bs-dismiss="offcanvas"
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt aria-hidden />
+                <span>Log out</span>
+              </button>
+            </div>
           </div>
         </div>
-      </nav>
 
-      <main className="container my-4 flex-grow-1">{children}</main>
+        <main className="cp-main-app flex-grow-1">{children}</main>
 
-      <footer className="bg-light text-center py-3 border-top">
-        <div className="container">
-          <small>© {new Date().getFullYear()} ClearPath</small>
-        </div>
-      </footer>
+        <footer className="cp-footer text-center mt-auto py-3 py-lg-2">
+          <div className="cp-main-app px-3 px-lg-4">
+            <small>© {new Date().getFullYear()} ClearPath</small>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
