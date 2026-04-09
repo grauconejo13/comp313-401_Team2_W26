@@ -238,7 +238,7 @@ Copy `client/.env.example` → `client/.env` and `server/.env.example` → `serv
 1. **Redeploy after env vars** — Vite reads `VITE_API_URL` at **build** time. In Vercel → Project → Settings → Environment Variables, set `VITE_API_URL` for **Production** (and **Preview** if you use previews), then **Redeploy**.
 2. **Root directory** — If the repo contains `client` and `server`, set Vercel **Root Directory** to `client`, Build `npm run build`, Output `dist`.
 3. **Browser DevTools → Console** — If you see `[ClearPath] API URL points to localhost…`, fix `VITE_API_URL` and redeploy.
-4. **CORS** — If API requests fail with CORS errors, add your exact `https://….vercel.app` URL to server `CORS_ORIGINS` and restart the API.
+4. **CORS** — The API allows `https://*.vercel.app` by default. For a **custom domain**, add it to server `CORS_ORIGINS` (comma-separated) and restart the API.
 
 **Port already in use**
 - Change `PORT` in `server/.env` and `VITE_API_URL` in `client/.env` accordingly
