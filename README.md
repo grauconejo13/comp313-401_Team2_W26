@@ -234,6 +234,12 @@ Copy `client/.env.example` → `client/.env` and `server/.env.example` → `serv
 - Set `VITE_API_URL` on Vercel to your **hosted** API (not `localhost`) and redeploy
 - On Render (API host): set `CORS_ORIGINS` if your Vercel URL is not the default one in code
 
+**API returns 404 for `/api/transactions`, `/api/semester`, etc.**
+
+- Your **Render (or other) service must run the Express app in `server/`**, not the Vite/React `client/`.
+- In Render: **Settings → Root Directory** = `server`; **Build** = `npm install && npm run build`; **Start** = `npm start` (`node dist/server.js`). Or connect the repo using the root **`render.yaml`** Blueprint.
+- Open `https://YOUR-SERVICE.onrender.com/health` — you should see `{"status":"ok"}`. If that URL 404s, the wrong app or start command is deployed.
+
 **Vercel shows a blank page or nothing loads**
 1. **Redeploy after env vars** — Vite reads `VITE_API_URL` at **build** time. In Vercel → Project → Settings → Environment Variables, set `VITE_API_URL` for **Production** (and **Preview** if you use previews), then **Redeploy**.
 2. **Root directory** — If the repo contains `client` and `server`, set Vercel **Root Directory** to `client`, Build `npm run build`, Output `dist`.

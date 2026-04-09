@@ -76,7 +76,7 @@ function formatMoney(n: number) {
 
 function StudentDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
   const [semesterStart, setSemesterStart] = useState<string | null>(null);
@@ -100,7 +100,7 @@ function StudentDashboard() {
   useEffect(() => {
     async function loadSemester() {
       try {
-        const semester = await getSemester(1);
+        const semester = await getSemester(token);
 
         if (semester?.startDate && semester?.endDate) {
           setSemesterStart(semester.startDate);
@@ -132,7 +132,7 @@ function StudentDashboard() {
     }
 
     loadSemester();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     let cancelled = false;

@@ -15,6 +15,7 @@ import categoryRoutes from "./routes/admin.category.routes";
 import adminTemplateRoutes from "./routes/admin.template.routes";
 import accountabilityRoutes from "./routes/accountability.routes";
 import templateRoutes from "./routes/template.routes";
+import semesterRoutes from "./routes/semester.routes";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/semester", semesterRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/accountability", accountabilityRoutes);

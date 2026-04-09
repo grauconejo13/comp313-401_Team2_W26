@@ -1,0 +1,12 @@
+# Optional: Render Blueprint — Dashboard → New Blueprint → paste repo URL
+# Ensures the API service builds from /server (Express), not the React client.
+services:
+  - type: web
+    name: clearpath-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
