@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import { getApiOrigin } from "./config/apiOrigin";
 import Layout from "./components/common/Layout";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
@@ -24,9 +26,24 @@ import TemplatePage from "./pages/TemplatePage";
 import ProfilePage from "./pages/ProfilePage";
 import AccountabilityHistoryPage from "./pages/AccountabilityHistoryPage";
 
+/** Logs in production if Vite baked in localhost (VITE_API_URL missing on Vercel). */
+function ProductionApiWarning() {
+  useEffect(() => {
+    if (import.meta.env.DEV) return;
+    const origin = getApiOrigin();
+    if (/localhost|127\.0\.0\.1/.test(origin)) {
+      console.error(
+        "[ClearPath] API URL points to localhost in this build. Set VITE_API_URL in Vercel (Production + Preview), then redeploy.",
+      );
+    }
+  }, []);
+  return null;
+}
+
 function App() {
   return (
     <AuthProvider>
+      <ProductionApiWarning />
       <Router>
         <Layout>
           <Routes>
