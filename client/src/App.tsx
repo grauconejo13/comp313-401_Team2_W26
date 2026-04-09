@@ -22,6 +22,7 @@ import SavingsPage from "./pages/SavingsPage";
 import CategoryPage from "./pages/CategoryPage";
 import TemplatePage from "./pages/TemplatePage";
 import ProfilePage from "./pages/ProfilePage";
+import AccountabilityHistoryPage from "./pages/AccountabilityHistoryPage";
 
 function App() {
   return (
@@ -95,6 +96,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TransactionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/accountability"
+              element={
+                <ProtectedRoute>
+                  <AccountabilityHistoryPage />
                 </ProtectedRoute>
               }
             />

@@ -172,6 +172,19 @@ Open a **new terminal** and:
 
 ---
 
+## Transactions, filters & accountability (CP-22 / CP-24 / CP-25)
+
+| Area | What |
+|------|------|
+| **Accountability history** | Sidebar → **Accountability**. Lists reasons you gave for **creating**, **editing**, and **deleting** transactions (with change snapshots where applicable). |
+| **Add transaction** | **Transactions** → **Add transaction** — requires a **reason** (min 5 chars) for the audit log. |
+| **Filters** | Same page: **category** (with datalist from your data), **date range** (`YYYY-MM-DD` via date pickers), **Apply filters** / **Clear**. |
+| **API** | `GET /api/transactions?category=&dateFrom=&dateTo=` · `GET /api/transactions/categories` · `POST /api/transactions` · `GET /api/accountability` |
+
+**Backend tests:** from `server/`, run `npm test` (Vitest helpers for transaction list query parsing).
+
+---
+
 ## Quick Reference
 
 | Component | URL | Port |

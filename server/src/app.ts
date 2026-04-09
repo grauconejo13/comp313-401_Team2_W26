@@ -15,6 +15,7 @@ import goalRoutes from "./routes/goal.routes";
 import savingsRoutes from "./routes/savings.routes";
 import categoryRoutes from "./routes/admin.category.routes";
 import adminTemplateRoutes from "./routes/admin.template.routes";
+import accountabilityRoutes from "./routes/accountability.routes";
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/accountability", accountabilityRoutes);
 app.use("/api/debts", debtRoutes);
 app.use("/api/expense", expenseRoutes);
 app.use("/api/user", userRoutes);
