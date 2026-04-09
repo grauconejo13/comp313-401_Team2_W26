@@ -1,10 +1,10 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 export interface User {
   id: string;
   email: string;
-  role: 'student' | 'admin';
+  role: "student" | "admin";
 }
 
 export interface AuthResponse {
@@ -14,30 +14,44 @@ export interface AuthResponse {
 
 const api = axios.create({
   baseURL: `${API_BASE}/api/auth`,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { "Content-Type": "application/json" },
 });
 
-export const register = async (email: string, password: string): Promise<AuthResponse> => {
-  const { data } = await api.post<AuthResponse>('/register', { email, password });
-  return data;
-};
-
-export const login = async (email: string, password: string): Promise<AuthResponse> => {
-  const { data } = await api.post<AuthResponse>('/login', { email, password });
-  return data;
-};
-
-export const logout = async (token: string): Promise<void> => {
-  await api.post('/logout', {}, { headers: { Authorization: `Bearer ${token}` } });
-};
-
-export const getCurrentUser = async (token: string): Promise<{ user: User }> => {
-  const { data } = await api.get<{ user: User }>('/me', {
-    headers: { Authorization: `Bearer ${token}` }
+export const register = async (
+  email: string,
+  password: string,
+): Promise<AuthResponse> => {
+  const { data } = await api.post<AuthResponse>("/register", {
+    email,
+    password,
   });
   return data;
 };
 
+export const login = async (
+  email: string,
+  password: string,
+): Promise<AuthResponse> => {
+  const { data } = await api.post<AuthResponse>("/login", { email, password });
+  return data;
+};
+
+export const logout = async (token: string): Promise<void> => {
+  await api.post(
+    "/logout",
+    {},
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+};
+
+export const getCurrentUser = async (
+  token: string,
+): Promise<{ user: User }> => {
+  const { data } = await api.get<{ user: User }>("/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
 
 // del later
 console.log("API BASE:", API_BASE);
