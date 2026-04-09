@@ -105,22 +105,24 @@ function TransactionList() {
   };
 
   if (loading) {
-    return <p>Loading transactions...</p>;
+    return (
+      <div className="cp-card p-4 mt-4 text-muted small">Loading transactions…</div>
+    );
   }
 
   return (
-    <div className="mt-4">
-      <h3 className="mb-3">Recent Transactions</h3>
+    <div className="cp-card p-3 p-md-4 mt-4">
+      <h3 className="h5 fw-semibold mb-3">Recent transactions</h3>
 
-      {message && <div className="alert alert-success">{message}</div>}
-      {error && <div className="alert alert-danger">{error}</div>}
+      {message && <div className="alert alert-success small py-2">{message}</div>}
+      {error && <div className="alert alert-danger small py-2">{error}</div>}
 
       {transactions.length === 0 ? (
-        <div className="alert alert-info">No transactions found.</div>
+        <div className="alert alert-info small py-2 mb-0">No transactions found.</div>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-bordered table-striped align-middle">
-            <thead className="table-light">
+        <div className="table-responsive cp-table-wrap rounded-3 border">
+          <table className="table table-hover align-middle mb-0">
+            <thead>
               <tr>
                 <th>Date</th>
                 <th>Type</th>

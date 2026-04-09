@@ -27,49 +27,55 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container py-5" style={{ maxWidth: 400 }}>
-      <h2>Create account</h2>
-      <form onSubmit={handleSubmit}>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <div className="mb-3">
-          <label className="form-label">Name</label>
-          <input
-            type="text"
-            className="form-control"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoComplete="name"
-            required
-          />
+    <div className="cp-page-hero py-4">
+      <div className="cp-auth-shell px-2">
+        <div className="cp-auth-card">
+          <h2>Create account</h2>
+          <form onSubmit={handleSubmit}>
+            {error && <div className="alert alert-danger small py-2">{error}</div>}
+            <div className="mb-3">
+              <label className="form-label">Name</label>
+              <input
+                type="text"
+                className="form-control"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Password (min 6 characters)</label>
+              <input
+                type="password"
+                className="form-control"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                minLength={6}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create account'}
+            </button>
+          </form>
+          <p className="mb-0 mt-3 text-center small text-muted">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
         </div>
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Password (min 6 characters)</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-          {loading ? 'Creating account...' : 'Create account'}
-        </button>
-      </form>
-      <p className="mt-3 text-center">
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
+      </div>
     </div>
   );
 }
