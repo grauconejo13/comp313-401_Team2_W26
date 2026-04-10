@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
-import { Transaction } from "../models/Transaction.model";
+import { Expense } from "../models/expense.model";
+import Income from "../models/income.model";
 import { User } from "../models/User.model";
 import { expenseCategories } from "../models/expenseCategories";
 import { computeGhostMetrics, type ExpenseRow } from "../services/ghost.service";
@@ -17,20 +18,17 @@ export async function getDashboardSummary(
       return;
     }
 
-    const [transactions, user] = await Promise.all([
-      Transaction.find({ user: userId, isDeleted: false }).lean(),
+    const [expensesRaw, incomesRaw, user] = await Promise.all([
+      Expense.find({ user: userId }).lean(),
+      Income.find({ user: userId }).lean(),
       User.findById(userId).select("name preferredCurrency").lean(),
     ]);
 
-    const incomes = transactions
-      .filter((t) => t.type === "income")
-      .map((t) => ({ amount: Number(t.amount) || 0 }));
-    const expenses: ExpenseRow[] = transactions
-      .filter((t) => t.type === "expense")
-      .map((t) => ({
-        amount: Number(t.amount) || 0,
-        category: typeof t.category === "string" ? t.category : "Other",
-      }));
+    const incomes = incomesRaw.map((t) => ({ amount: Number(t.amount) || 0 }));
+    const expenses: ExpenseRow[] = expensesRaw.map((t) => ({
+      amount: Number(t.amount) || 0,
+      category: typeof t.category === "string" ? t.category : "Other",
+    }));
 
     const totalIncome = incomes.reduce((sum, i) => sum + Math.max(0, i.amount), 0);
     const totalExpense = expenses.reduce((sum, e) => sum + Math.max(0, e.amount), 0);

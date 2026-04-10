@@ -9,7 +9,8 @@ import {
 } from "react-icons/md";
 import { FaWallet, FaCreditCard } from "react-icons/fa";
 import { getSemester } from "../../api/semesterApi";
-import { getTransactions } from "../../api/transactionApi";
+import { getIncomes } from "../../api/incomeApi";
+import { getExpenses } from "../../api/expenseApi";
 import { fetchDashboardSummary } from "../../api/dashboardApi";
 import { useAuth } from "../../context/AuthContext";
 import TransactionList from "./TransactionList";
@@ -145,18 +146,15 @@ function StudentDashboard() {
       setTxError("");
       setTxLoading(true);
       try {
-        const list = await getTransactions();
+        const [incomeList, expenseList] = await Promise.all([getIncomes(), getExpenses()]);
         if (cancelled) return;
         let inc = 0;
         let exp = 0;
-        for (const t of list) {
-          const a = Number(t.amount) || 0;
-          if (t.type === "income") inc += a;
-          else exp += a;
-        }
+        for (const t of incomeList) inc += Number(t.amount) || 0;
+        for (const t of expenseList) exp += Number(t.amount) || 0;
         setIncomeTotal(inc);
         setExpenseTotal(exp);
-        setTxCount(list.length);
+        setTxCount(incomeList.length + expenseList.length);
       } catch (e) {
         if (!cancelled) {
           setTxError("Could not load activity summary.");
