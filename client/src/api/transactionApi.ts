@@ -30,7 +30,8 @@ export const getTransactions = async (
   }
 
   const params = new URLSearchParams();
-  if (filters?.category?.trim()) params.set("category", filters.category.trim());
+  if (filters?.category?.trim())
+    params.set("category", filters.category.trim());
   if (filters?.dateFrom) params.set("dateFrom", filters.dateFrom);
   if (filters?.dateTo) params.set("dateTo", filters.dateTo);
   const qs = params.toString();
@@ -55,13 +56,13 @@ export const getTransactionCategories = async (
 ): Promise<string[]> => {
   const authToken = token || localStorage.getItem("clearpath_token");
   if (!authToken) throw new Error("No auth token found");
-  const res = await axios.get<{ categories: string[] }>(
-    `${API_URL}/categories`,
-    {
-      headers: { Authorization: `Bearer ${authToken}` },
-    },
-  );
-  return res.data.categories;
+
+  const res = await axios.get(`${getApiOrigin()}/api/admin/categories`, {
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+
+  // map Category objects → names
+  return res.data.map((c: any) => c.name);
 };
 
 export const editTransaction = async (

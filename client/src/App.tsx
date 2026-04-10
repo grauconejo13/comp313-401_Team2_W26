@@ -23,6 +23,7 @@ import CurrencySettingsPage from "./pages/CurrencySettingsPage";
 import SavingsPage from "./pages/SavingsPage";
 import CategoryPage from "./pages/CategoryPage";
 import TemplatePage from "./pages/TemplatePage";
+import AdminToolsPage from "./pages/AdminToolsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AccountabilityHistoryPage from "./pages/AccountabilityHistoryPage";
 
@@ -162,6 +163,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TemplatePage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/tools"
+              element={
+                <ProtectedRoute>
+                  <AdminToolsPage />
                 </ProtectedRoute>
               }
             />

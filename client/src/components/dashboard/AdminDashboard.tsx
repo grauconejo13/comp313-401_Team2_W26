@@ -16,6 +16,7 @@ function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const res = await axios.get(`${API}/api/admin/stats`);
+        console.log("Stats API:", `${API}/api/admin/stats`);
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats", err);
@@ -26,63 +27,35 @@ function AdminDashboard() {
   }, [API]);
 
   return (
-    <div className="container py-4" style={{ background: "var(--bg)" }}>
+    <div
+      className="container-fluid py-4 px-4"
+      style={{ background: "var(--bg)" }}
+    >
       <h2 className="mb-4" style={{ color: "var(--text)" }}>
         Admin Dashboard
       </h2>
 
       {/* 📊 STATS */}
       <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="card shadow-sm text-center">
-            <div className="card-body">
-              <h5>Total Users</h5>
-              <h3>{stats.totalUsers}</h3>
+        {[
+          { label: "Total Users", value: stats.totalUsers },
+          { label: "Active Users", value: stats.activeUsers },
+          { label: "Total Transactions", value: stats.totalTransactions },
+          { label: "Status", value: stats.status },
+        ].map((item, i) => (
+          <div className="col-md-3" key={i}>
+            <div className="card shadow-sm h-100 text-center p-3">
+              <h6 className="text-muted">{item.label}</h6>
+              <h3 className="fw-bold">{item.value}</h3>
             </div>
           </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="card shadow-sm text-center">
-            <div className="card-body">
-              <h5>Active Users</h5>
-              <h3>{stats.activeUsers}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="card shadow-sm text-center">
-            <div className="card-body">
-              <h5>Total Transactions</h5>
-              <h3>{stats.totalTransactions}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="card shadow-sm text-center">
-            <div className="card-body">
-              <h5>Status</h5>
-              <h3>{stats.status}</h3>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* ⚙️ ACTIONS */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-6">
-          <Link to="/admin/categories">
-            <div className="card text-center p-3">Manage Categories</div>
-          </Link>
-        </div>
-
-        <div className="col-md-6">
-          <Link to="/admin/templates">
-            <div className="card text-center p-3">Manage Templates</div>
-          </Link>
-        </div>
+      <div className="mt-4">
+        <Link to="/admin/tools" className="btn btn-outline-primary">
+          Open Admin Tools
+        </Link>
       </div>
     </div>
   );
