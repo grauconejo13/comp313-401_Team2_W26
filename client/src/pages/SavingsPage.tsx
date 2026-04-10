@@ -43,6 +43,11 @@ const SavingsPage = () => {
   const [contributeError, setContributeError] = useState("");
   const [contributeSaving, setContributeSaving] = useState(false);
 
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -53,6 +58,9 @@ const SavingsPage = () => {
       const goalsData = await getGoals();
       setGoals(goalsData);
       const templateData = await getTemplates();
+      console.log("TEMPLATES:", JSON.stringify(templateData, null, 2));
+      console.log("First template name:", templateData[0]?.name);
+      console.log("First template type:", templateData[0]?.type);
       setTemplates(templateData);
     } catch {
       setError("Failed to load data");
@@ -71,11 +79,18 @@ const SavingsPage = () => {
   };
 
   const handleWithdraw = async () => {
-    if (!amount) return;
-    await withdrawSavings(Number(amount));
-    setAmount("");
-    loadData();
-  };
+  if (!amount || !withdrawReason.trim()) {
+    setError("Amount and reason are required");
+    return;
+  }
+
+  await withdrawSavings(Number(amount), withdrawReason);
+
+  setAmount("");
+  setWithdrawReason("");
+  setShowWithdraw(false);
+  loadData();
+};
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
@@ -196,7 +211,7 @@ const SavingsPage = () => {
         <button className="btn btn-success me-2" onClick={handleAdd}>
           Add Funds
         </button>
-        <button className="btn btn-warning" onClick={handleWithdraw}>
+        <button className="btn btn-warning" onClick={() => setShowWithdraw(true)}>
           Withdraw Funds
         </button>
       </div>
@@ -260,30 +275,31 @@ const SavingsPage = () => {
                 />
               </div>
             ))}
-            <input
-              className="form-control mb-2"
-              placeholder="Goal Name"
-              value={goalName}
-              onChange={(e) => setGoalName(e.target.value)}
-            />
-            <input
-              type="number"
-              className="form-control mb-2"
-              placeholder="Target Amount"
-              value={goalAmount}
-              onChange={(e) => setGoalAmount(e.target.value)}
-            />
-            <input
-              type="date"
-              className="form-control mb-2"
-              value={goalDeadline}
-              onChange={(e) => setGoalDeadline(e.target.value)}
-            />
-            <button className="btn btn-success mb-3" onClick={handleCreateGoal}>
-              Create Goal
-            </button>
+            
+            <div className="d-flex gap-2">
+              <button className="btn btn-success mb-3" onClick={handleCreateGoal}>
+                Create Goal
+              </button>
+
+              <button
+                className="btn btn-secondary mb-3"
+                onClick={() => {
+                  setShowGoalOptions(false);
+                  setGoalMode("");
+                  setGoalName("");
+                  setGoalAmount("");
+                  setGoalDeadline("");
+                  setSelectedTemplate("");
+                  setDynamicFields([]);
+                  setEditingId(null);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </>
         )}
+        <p><strong>{goalName}</strong></p>
 
         {goalMode === "manual" && (
           <>
@@ -389,7 +405,7 @@ const SavingsPage = () => {
                     fontSize: "0.9rem",
                   }}
                 >
-                  🎉 Goal reached!
+                   Goal reached!
                 </span>
               ) : (
                 <>
@@ -456,8 +472,54 @@ const SavingsPage = () => {
           );
         })}
       </div>
+
+      {/* Withdraw Modal */}
+      {showWithdraw && (
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5>Withdraw Funds</h5>
+                <button className="btn-close" onClick={() => setShowWithdraw(false)} />
+              </div>
+
+              <div className="modal-body">
+                <input
+                  type="number"
+                  className="form-control mb-2"
+                  placeholder="Amount"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                />
+
+                <textarea
+                  className="form-control"
+                  placeholder="Reason (required)"
+                  value={withdrawReason}
+                  onChange={(e) => setWithdrawReason(e.target.value)}
+                />
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowWithdraw(false)}>
+                  Cancel
+                </button>
+
+                <button
+                  className="btn btn-warning"
+                  onClick={handleWithdraw}
+                >
+                  Confirm Withdraw
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+
 
 export default SavingsPage;
