@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getApiOrigin } from "../config/apiOrigin";
 
-const API_URL = `${getApiOrigin()}/api/admin/templates`;
+const API_URL = `${getApiOrigin()}/api/templates`;
 
 export interface Field {
   key: string;

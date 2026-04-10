@@ -13,7 +13,10 @@ export const addSavings = async (amount: number) => {
   return res.data;
 };
 
-export const withdrawSavings = async (amount: number) => {
-  const res = await axios.post(`${API_URL}/withdraw`, { amount });
+export const withdrawSavings = async (amount: number, reason: string) => {
+  const res = await axios.post(`${API_URL}/withdraw`, {
+    amount,
+    reason,
+  });
   return res.data;
 };
