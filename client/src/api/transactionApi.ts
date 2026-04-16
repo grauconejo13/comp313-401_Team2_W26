@@ -1,6 +1,4 @@
 import axios from "axios";
-import {getIncomes} from "./incomeApi";
-import { getExpenses } from "./expenseApi";
 import { getApiOrigin } from "../config/apiOrigin";
 
 const API_URL = `${getApiOrigin()}/api/transactions`;
@@ -11,8 +9,7 @@ export interface Transaction {
   amount: number;
   description: string;
   category?: string;
-  createdAt: string;
-  updatedAt?: string;
+  date: string;
 }
 
 export type TransactionFilters = {
@@ -24,81 +21,23 @@ export type TransactionFilters = {
 };
 
 export const getTransactions = async (
+  token?: string,
   filters?: TransactionFilters,
-  token?: string
 ): Promise<Transaction[]> => {
-  try {
-    const [incomes, expenses] = await Promise.all([
-      getIncomes(),
-      getExpenses(),
-    ]);
-    
-    const normalizedIncomes: Transaction[] = incomes.map((i: any) => ({
-      _id: i._id || i.id,
-      amount: i.amount,
-      description: i.reason || "Income",
-      category: i.category || "Income",
-      createdAt: i.date,
-      type: "income",
-    }));
+  const authToken = token || localStorage.getItem("clearpath_token");
 
-    const normalizedExpenses: Transaction[] = expenses.map((e) => ({
-      _id: e._id,
-      amount: e.amount,
-      description: e.reason || "Expense",
-      category: e.category || "Expense",
-      createdAt: e.date,
-      type: "expense",
-    }));
-
-    let combined = [...normalizedIncomes, ...normalizedExpenses];
-
-    if (filters) {
-      combined = combined.filter((tx) => {
-        if (filters.category?.trim()) {
-          if (!tx.category) return false;
-
-          if (tx.category.toLowerCase() !==
-            filters.category.trim().toLowerCase()
-          ) {
-            return false;
-          }
-        }
-
-        if (filters.dateFrom && tx.createdAt < filters.dateFrom) {
-          return false;
-        }
-
-        if (filters.dateTo && tx.createdAt > filters.dateTo) {
-          return false;
-        }
-
-        return true;
-      });
-    }
-
-    const sortBy = filters?.sortBy || "date";
-    const sortOrder = filters?.sortOrder || "desc";
-
-    combined.sort((a, b) => {
-      let comparison = 0;
-
-      if (sortBy === "date") {
-        comparison =
-          new Date(a.createdAt).getTime() -
-          new Date(b.createdAt).getTime();
-      } else if (sortBy === "amount") {
-        comparison = a.amount - b.amount;
-      }
-
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-    return combined;
-  } catch (error) {
-    console.error("Failed to fetch transactions:", error);
-    throw error;
+  if (!authToken) {
+    throw new Error("No auth token found");
   }
+
+  const params = new URLSearchParams();
+  if (filters?.category?.trim())
+    params.set("category", filters.category.trim());
+  if (filters?.dateFrom) params.set("dateFrom", filters.dateFrom);
+  if (filters?.dateTo) params.set("dateTo", filters.dateTo);
+  const qs = params.toString();
+  const url = qs ? `${API_URL}?${qs}` : API_URL;
+
   const res = await axios.get<{ transactions: Transaction[] }>(url, {
     headers: {
       Authorization: `Bearer ${authToken}`,

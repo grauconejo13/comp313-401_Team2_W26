@@ -58,8 +58,23 @@ const TransactionsPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getTransactions(appliedFilters, token);
-      setTransactions(data);
+      const data = await getTransactions(token, appliedFilters);
+      const sorted = [...data].sort((a, b) => {
+        let valA: number;
+        let valB: number;
+
+        if (sortBy === "amount") {
+          valA = Number(a.amount);
+          valB = Number(b.amount);
+        } else {
+          valA = new Date(a.date).getTime();
+          valB = new Date(b.date).getTime();
+        }
+
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      });
+
+      setTransactions(sorted);
     } catch (e: unknown) {
       setError(getApiErrorMessage(e, "Failed to load transactions"));
     } finally {
@@ -323,7 +338,7 @@ const TransactionsPage = () => {
                   <tr key={t._id}>
                     <td>{index + 1}</td>
                     <td className="text-nowrap">
-                      {new Date(t.createdAt).toLocaleDateString()}
+                      {new Date(t.date).toLocaleDateString()}
                     </td>
                     <td className="text-capitalize">{t.type}</td>
                     <td>{t.category ?? "—"}</td>
