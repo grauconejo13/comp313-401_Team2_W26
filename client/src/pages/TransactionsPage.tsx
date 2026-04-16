@@ -10,6 +10,14 @@ import {
 } from "../api/transactionApi";
 import { getApiErrorMessage } from "../utils/apiError";
 
+/** Local calendar date for date inputs (YYYY-MM-DD). */
+function localDateInputValue(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 const TransactionsPage = () => {
   const { token } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -24,6 +32,7 @@ const TransactionsPage = () => {
   const [addAmount, setAddAmount] = useState("");
   const [addDescription, setAddDescription] = useState("");
   const [addCategory, setAddCategory] = useState("");
+  const [addTransactionDate, setAddTransactionDate] = useState(localDateInputValue);
   const [addReason, setAddReason] = useState("");
   const [addSubmitting, setAddSubmitting] = useState(false);
 
@@ -52,8 +61,7 @@ const TransactionsPage = () => {
       const data = await getTransactions(appliedFilters, token);
       setTransactions(data);
     } catch (e: unknown) {
-      const ax = e as { response?: { data?: { message?: string } } };
-      setError(ax?.response?.data?.message || "Failed to load transactions");
+      setError(getApiErrorMessage(e, "Failed to load transactions"));
     } finally {
       setLoading(false);
     }
@@ -68,6 +76,11 @@ const TransactionsPage = () => {
   }, [loadTransactions]);
 
   const applyFilters = () => {
+    setError(null);
+    if (filterDateFrom && filterDateTo && filterDateFrom > filterDateTo) {
+      setError("“From” date must be on or before “To” date.");
+      return;
+    }
     const next: TransactionFilters = {};
 
     if (filterCategory.trim()) next.category = filterCategory.trim();
@@ -104,6 +117,10 @@ const TransactionsPage = () => {
       setError("Reason must be at least 5 characters (accountability log)");
       return;
     }
+    if (!addTransactionDate.trim()) {
+      setError("Transaction date is required.");
+      return;
+    }
     setAddSubmitting(true);
     setError(null);
     try {
@@ -114,6 +131,7 @@ const TransactionsPage = () => {
           description: addDescription.trim(),
           category: addCategory.trim() || undefined,
           reason: addReason.trim(),
+          transactionDate: addTransactionDate.trim(),
         },
         token,
       );
@@ -121,6 +139,7 @@ const TransactionsPage = () => {
       setAddAmount("");
       setAddDescription("");
       setAddCategory("");
+      setAddTransactionDate(localDateInputValue());
       setAddReason("");
       setAppliedFilters({});
       setFilterCategory("");
@@ -172,6 +191,7 @@ const TransactionsPage = () => {
           className="btn btn-primary"
           onClick={() => {
             setShowAdd(true);
+            setAddTransactionDate(localDateInputValue());
             setError(null);
           }}
         >
@@ -356,6 +376,23 @@ const TransactionsPage = () => {
                 )}
                 <div className="row g-3">
                   <div className="col-md-4">
+                    <label className="form-label" htmlFor="add-tx-date">
+                      Transaction date <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      id="add-tx-date"
+                      type="date"
+                      className="form-control"
+                      required
+                      value={addTransactionDate}
+                      onChange={(e) => setAddTransactionDate(e.target.value)}
+                    />
+                    <p className="form-text small text-muted mb-0">
+                      When this income or expense happened. Used for lists and date filters
+                      (stored as start of that day, UTC).
+                    </p>
+                  </div>
+                  <div className="col-md-4">
                     <label className="form-label" htmlFor="add-type">
                       Type
                     </label>
@@ -371,7 +408,7 @@ const TransactionsPage = () => {
                       <option value="income">Income</option>
                     </select>
                   </div>
-                  <div className="col-md-8">
+                  <div className="col-md-4">
                     <label className="form-label" htmlFor="add-amount">
                       Amount
                     </label>

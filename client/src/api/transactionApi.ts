@@ -99,6 +99,13 @@ export const getTransactions = async (
     console.error("Failed to fetch transactions:", error);
     throw error;
   }
+  const res = await axios.get<{ transactions: Transaction[] }>(url, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+
+  return res.data.transactions;
 };
 
 export const getTransactionCategories = async (
@@ -154,6 +161,8 @@ export const createTransaction = async (
     description: string;
     category?: string;
     reason: string;
+    /** When the transaction occurred (YYYY-MM-DD), stored as UTC start-of-day for filtering. */
+    transactionDate: string;
   },
   token: string,
 ): Promise<Transaction> => {

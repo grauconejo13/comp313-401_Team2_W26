@@ -129,7 +129,7 @@ export default function LoginPage() {
             <Link to="/forgot-password">Forgot password?</Link>
           </p>
           <p className="mb-0 text-center small text-muted">
-            Don&apos;t have an account? <Link to="/register">Create account</Link>
+            Don&apos;t have an account? <Link to="/register" className="link-primary text-decoration-underline">Sign up</Link>
           </p>
         </div>
       </div>
