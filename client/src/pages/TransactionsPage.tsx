@@ -40,6 +40,8 @@ const TransactionsPage = () => {
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
   const [appliedFilters, setAppliedFilters] = useState<TransactionFilters>({});
+  const [sortBy, setSortBy] = useState<"date" | "amount">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const loadCategories = useCallback(async () => {
     if (!token) return;
@@ -57,7 +59,22 @@ const TransactionsPage = () => {
     setError(null);
     try {
       const data = await getTransactions(token, appliedFilters);
-      setTransactions(data);
+      const sorted = [...data].sort((a, b) => {
+        let valA: number;
+        let valB: number;
+
+        if (sortBy === "amount") {
+          valA = Number(a.amount);
+          valB = Number(b.amount);
+        } else {
+          valA = new Date(a.date).getTime();
+          valB = new Date(b.date).getTime();
+        }
+
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      });
+
+      setTransactions(sorted);
     } catch (e: unknown) {
       setError(getApiErrorMessage(e, "Failed to load transactions"));
     } finally {
@@ -80,9 +97,14 @@ const TransactionsPage = () => {
       return;
     }
     const next: TransactionFilters = {};
+
     if (filterCategory.trim()) next.category = filterCategory.trim();
     if (filterDateFrom) next.dateFrom = filterDateFrom;
     if (filterDateTo) next.dateTo = filterDateTo;
+
+    next.sortBy = sortBy;
+    next.sortOrder = sortOrder;
+
     setAppliedFilters(next);
   };
 
@@ -138,6 +160,7 @@ const TransactionsPage = () => {
       setFilterCategory("");
       setFilterDateFrom("");
       setFilterDateTo("");
+      await loadTransactions();
       await loadCategories();
     } catch (e: unknown) {
       setError(getApiErrorMessage(e, "Failed to add transaction"));
@@ -236,6 +259,23 @@ const TransactionsPage = () => {
               onChange={(e) => setFilterDateTo(e.target.value)}
             />
           </div>
+          <div className="col-md-4 col-lg-3">
+            <label className="form-label">Sort</label>
+            <select
+              className="form-select"
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [by, order] = e.target.value.split("-");
+                setSortBy(by as "date" | "amount");
+                setSortOrder(order as "asc" | "desc");
+              }}
+            >
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="amount-desc">Highest amount</option>
+              <option value="amount-asc">Lowest amount</option>
+            </select>
+          </div>
           <div className="col-md-8 col-lg-4 d-flex flex-wrap gap-2">
             <button
               type="button"
@@ -298,7 +338,7 @@ const TransactionsPage = () => {
                   <tr key={t._id}>
                     <td>{index + 1}</td>
                     <td className="text-nowrap">
-                      {new Date(t.createdAt).toLocaleDateString()}
+                      {new Date(t.date).toLocaleDateString()}
                     </td>
                     <td className="text-capitalize">{t.type}</td>
                     <td>{t.category ?? "—"}</td>

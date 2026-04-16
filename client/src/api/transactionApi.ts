@@ -9,14 +9,15 @@ export interface Transaction {
   amount: number;
   description: string;
   category?: string;
-  createdAt: string;
-  updatedAt?: string;
+  date: string;
 }
 
 export type TransactionFilters = {
   category?: string;
   dateFrom?: string;
   dateTo?: string;
+  sortBy?: "date" | "amount";
+  sortOrder?: "asc" | "desc";
 };
 
 export const getTransactions = async (
