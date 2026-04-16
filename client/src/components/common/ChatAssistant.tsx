@@ -123,7 +123,7 @@ export default function ChatAssistant() {
                 />
               </span>
               <div>
-                <div className="fw-bold small">Trumpbot</div>
+                <div className="fw-bold small">Clearpath Assistant</div>
                 <div className="text-muted" style={{ fontSize: "0.7rem" }}>
                   {token ? "FAQ + optional AI when configured" : "Quick answers about ClearPath"}
                 </div>

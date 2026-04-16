@@ -1,10 +1,7 @@
 import { ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { MdMenu } from "react-icons/md";
-import {
-  FaUserCircle,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { MAIN_NAV_ITEMS } from "../../config/appNav";
 import ChatAssistant from "./ChatAssistant";
@@ -17,7 +14,13 @@ function SidebarNavLinks({ mobile }: { mobile?: boolean }) {
   const dismiss = mobile ? { "data-bs-dismiss": "offcanvas" as const } : {};
 
   return (
-    <nav className={mobile ? "d-flex flex-column gap-1" : "cp-sidebar-nav d-flex flex-column gap-1 flex-grow-1"}>
+    <nav
+      className={
+        mobile
+          ? "d-flex flex-column gap-1"
+          : "cp-sidebar-nav d-flex flex-column gap-1 flex-grow-1"
+      }
+    >
       {MAIN_NAV_ITEMS.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
@@ -48,7 +51,9 @@ function Layout({ children }: LayoutProps) {
     navigate("/");
   };
 
-  const displayName = user?.name?.trim() ? user.name.trim() : user?.email ?? "";
+  const displayName = user?.name?.trim()
+    ? user.name.trim()
+    : (user?.email ?? "");
 
   /* ——— Public layout (marketing / auth) ——— */
   if (!token) {
@@ -70,16 +75,15 @@ function Layout({ children }: LayoutProps) {
             >
               <span className="navbar-toggler-icon" />
             </button>
+
             <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav ms-auto">
+              <ul className="navbar-nav ms-auto align-items-lg-center">
                 <li className="nav-item">
-                  <Link className="nav-link" to="/login">
-                    Log in
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register">
-                    Register
+                  <Link
+                    className="btn btn-primary ms-lg-3 mt-2 mt-lg-0 px-3"
+                    to="/register"
+                  >
+                    Sign up
                   </Link>
                 </li>
               </ul>
@@ -87,15 +91,15 @@ function Layout({ children }: LayoutProps) {
           </div>
         </nav>
 
-        <main className="container px-3 px-lg-4 cp-main flex-grow-1">{children}</main>
+        <main className="container px-3 px-lg-4 cp-main flex-grow-1">
+          {children}
+        </main>
 
         <footer className="cp-footer text-center mt-auto">
           <div className="container px-3">
             <small>© {new Date().getFullYear()} ClearPath</small>
           </div>
         </footer>
-
-        <ChatAssistant />
       </div>
     );
   }
@@ -128,7 +132,10 @@ function Layout({ children }: LayoutProps) {
                 className="rounded-circle cp-sidebar-avatar flex-shrink-0"
               />
             ) : (
-              <FaUserCircle className="cp-sidebar-icon flex-shrink-0" aria-hidden />
+              <FaUserCircle
+                className="cp-sidebar-icon flex-shrink-0"
+                aria-hidden
+              />
             )}
             <span className="text-truncate">{displayName || "Profile"}</span>
           </NavLink>
@@ -146,7 +153,10 @@ function Layout({ children }: LayoutProps) {
       <div className="cp-app-main d-flex flex-column flex-grow-1 min-vh-100 min-w-0">
         {/* Mobile header + offcanvas menu */}
         <header className="cp-topbar-mobile d-flex d-lg-none align-items-center justify-content-between gap-3 px-3 py-2">
-          <Link to="/dashboard" className="cp-topbar-brand text-decoration-none fw-bold">
+          <Link
+            to="/dashboard"
+            className="cp-topbar-brand text-decoration-none fw-bold"
+          >
             ClearPath
           </Link>
           <button
@@ -193,9 +203,14 @@ function Layout({ children }: LayoutProps) {
                     className="rounded-circle cp-sidebar-avatar flex-shrink-0"
                   />
                 ) : (
-                  <FaUserCircle className="cp-sidebar-icon flex-shrink-0" aria-hidden />
+                  <FaUserCircle
+                    className="cp-sidebar-icon flex-shrink-0"
+                    aria-hidden
+                  />
                 )}
-                <span className="text-truncate">{displayName || "Profile"}</span>
+                <span className="text-truncate">
+                  {displayName || "Profile"}
+                </span>
               </Link>
               <button
                 type="button"
