@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   addExpense,
   getExpenses,
@@ -7,8 +8,10 @@ import {
   type Expense,
   type ExpenseRequest,
 } from "../api/expenseApi";
+import { getCategories } from "../api/adminApi";
 
-const categories = [
+const classifications = ["Necessary", "Avoidable"] as const;
+const defaultExpenseCategories = [
   "Food",
   "Transport",
   "Rent",
@@ -19,9 +22,8 @@ const categories = [
   "Other",
 ];
 
-const classifications = ["Necessary", "Avoidable"] as const;
-
 const ExpensePage = () => {
+  const { token } = useAuth();
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [classification, setClassification] = useState("");
@@ -32,6 +34,7 @@ const ExpensePage = () => {
   const [error, setError] = useState("");
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<ExpenseRequest>({
@@ -44,15 +47,25 @@ const ExpensePage = () => {
 
   //Load expenses on page load
   useEffect(() => {
-    loadExpenses();
-  }, []);
+    void loadExpenses();
+  }, [token]);
 
   const loadExpenses = async () => {
     try {
+      if (token) {
+        const cats = await getCategories(token, "expense");
+        const merged = Array.from(
+          new Set([...defaultExpenseCategories, ...cats.map((c) => c.name)])
+        );
+        setCategoryOptions(merged);
+      } else {
+        setCategoryOptions(defaultExpenseCategories);
+      }
       const data = await getExpenses();
       setExpenses(data);
     } catch (err) {
       console.error("Failed to load expenses", err);
+      setCategoryOptions(defaultExpenseCategories);
     }
   };
 
@@ -175,7 +188,7 @@ const ExpensePage = () => {
           onChange={(e) => setCategory(e.target.value)}
         >
           <option value="">Select category</option>
-          {categories.map((item) => (
+          {categoryOptions.map((item) => (
             <option key={item} value={item}>
               {item}
             </option>
@@ -280,7 +293,7 @@ const ExpensePage = () => {
                   onChange={handleEditChange}
                 >
                   <option value="">Select category</option>
-                  {categories.map((item) => (
+                  {categoryOptions.map((item) => (
                     <option key={item} value={item}>
                       {item}
                     </option>

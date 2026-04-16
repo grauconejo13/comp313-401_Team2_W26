@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { Expense } from "../models/expense.model";
 import { expenseCategories } from "../models/expenseCategories";
+import { Category } from "../models/Category.model";
 import { logAccountabilityEvent } from "../utils/accountability";
 
 //let expenses: Expense[] = [];
@@ -28,7 +29,13 @@ export const addExpense = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({message: "Classification is required"});
     }
 
-    if (!expenseCategories.includes(category)) {
+    const hasPresetCategory = expenseCategories.includes(category);
+    const hasUserCategory = await Category.exists({
+      user: userId,
+      type: "expense",
+      name: category,
+    });
+    if (!hasPresetCategory && !hasUserCategory) {
       return res.status(400).json({ message: "Invalid category." });
     }
 
@@ -111,8 +118,16 @@ export const editExpense = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { amount, category, classification, reason, date } = req.body;
 
-    if (category && !expenseCategories.includes(category)) {
-      return res.status(400).json({ message: "Invalid category." });
+    if (category) {
+      const hasPresetCategory = expenseCategories.includes(category);
+      const hasUserCategory = await Category.exists({
+        user: userId,
+        type: "expense",
+        name: category,
+      });
+      if (!hasPresetCategory && !hasUserCategory) {
+        return res.status(400).json({ message: "Invalid category." });
+      }
     }
 
     if (classification && !["Necessary", "Avoidable"].includes(classification)){

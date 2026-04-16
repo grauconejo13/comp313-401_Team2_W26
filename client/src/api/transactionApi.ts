@@ -9,7 +9,8 @@ export interface Transaction {
   amount: number;
   description: string;
   category?: string;
-  date: string;
+  date?: string;
+  createdAt?: string;
 }
 
 export type TransactionFilters = {

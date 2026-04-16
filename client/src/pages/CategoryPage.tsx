@@ -1,34 +1,34 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-type Category = {
-  _id: string;
-  name: string;
-  type: "income" | "expense";
-};
+import { useAuth } from "../context/AuthContext";
+import {
+  createCategory,
+  deleteCategory as deleteCategoryApi,
+  getCategories,
+  type Category,
+} from "../api/adminApi";
 
 export default function CategoryPage() {
+  const { token } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
 
-  // 🔗 Adjust this if using deployed backend
-  const API = import.meta.env.VITE_API_URL || "";
-
   const fetchCategories = async () => {
+    if (!token) return;
     try {
-      const res = await axios.get(`${API}/api/admin/categories`);
-      setCategories(res.data);
+      const rows = await getCategories(token);
+      setCategories(rows);
     } catch (err) {
       console.error("Error fetching categories", err);
     }
   };
 
   const addCategory = async () => {
+    if (!token) return;
     if (!name.trim()) return;
 
     try {
-      await axios.post(`${API}/api/admin/categories`, {
+      await createCategory(token, {
         name,
         type,
       });
@@ -40,8 +40,9 @@ export default function CategoryPage() {
   };
 
   const deleteCategory = async (id: string) => {
+    if (!token) return;
     try {
-      await axios.delete(`${API}/api/admin/categories/${id}`);
+      await deleteCategoryApi(token, id);
       fetchCategories();
     } catch (err) {
       console.error("Error deleting category", err);
@@ -49,17 +50,8 @@ export default function CategoryPage() {
   };
 
   useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const res = await axios.get(`${API}/api/admin/categories`);
-        setCategories(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    loadCategories();
-  }, [API]);
+    void fetchCategories();
+  }, [token]);
 
   return (
     <div className="container py-4">

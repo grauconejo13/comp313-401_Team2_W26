@@ -9,6 +9,7 @@ import {
   type Transaction,
   type TransactionFilters,
 } from "../api/transactionApi";
+import { getCategories } from "../api/adminApi";
 import { getApiErrorMessage } from "../utils/apiError";
 
 /** Local calendar date for date inputs (YYYY-MM-DD). */
@@ -53,8 +54,17 @@ const TransactionsPage = () => {
   const loadCategories = useCallback(async () => {
     if (!token) return;
     try {
-      const cats = await getTransactionCategories(token);
-      setCategories(cats);
+      const [usedCats, sharedCats] = await Promise.all([
+        getTransactionCategories(token),
+        getCategories(token),
+      ]);
+      const merged = Array.from(
+        new Set([
+          ...usedCats,
+          ...sharedCats.map((c) => c.name),
+        ])
+      ).sort((a, b) => a.localeCompare(b));
+      setCategories(merged);
     } catch {
       setCategories([]);
     }
@@ -74,8 +84,8 @@ const TransactionsPage = () => {
           valA = Number(a.amount);
           valB = Number(b.amount);
         } else {
-          valA = new Date(a.date).getTime();
-          valB = new Date(b.date).getTime();
+          valA = new Date(a.date ?? a.createdAt ?? 0).getTime();
+          valB = new Date(b.date ?? b.createdAt ?? 0).getTime();
         }
 
         return sortOrder === "asc" ? valA - valB : valB - valA;
@@ -395,7 +405,7 @@ const TransactionsPage = () => {
                   <tr key={t._id}>
                     <td>{index + 1}</td>
                     <td className="text-nowrap">
-                      {new Date(t.date).toLocaleDateString()}
+                      {new Date(t.date ?? t.createdAt ?? 0).toLocaleDateString()}
                     </td>
                     <td className="text-capitalize">{t.type}</td>
                     <td>{t.category ?? "—"}</td>
@@ -698,6 +708,9 @@ const TransactionsPage = () => {
                     onChange={(e) => setEditReason(e.target.value)}
                     placeholder="Why are you changing this entry?"
                   />
+                  <div className="form-text">
+                    Required for accountability history ({editReason.trim().length}/5).
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">
@@ -713,7 +726,7 @@ const TransactionsPage = () => {
                   type="button"
                   className="btn btn-primary"
                   onClick={confirmEdit}
-                  disabled={submitting || editReason.trim().length < 5}
+                  disabled={submitting}
                 >
                   {submitting ? "Saving…" : "Save changes"}
                 </button>

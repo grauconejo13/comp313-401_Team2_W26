@@ -9,9 +9,6 @@ import {
   startOfUtcDayFromDateInput
 } from '../utils/transactionListQuery';
 
-import Income from '../models/income.model';
-import { Expense } from '../models/expense.model';
-
 const DATE_INPUT_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const createTransaction = async (
@@ -149,44 +146,22 @@ export const getMyTransactions = async (
       return res.status(401).json({ message: 'Unauthenticated' });
     }
 
-    const userId = user._id;
+    let listQuery;
+    try {
+      listQuery = parseTransactionListQuery(req.query as Record<string, unknown>);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Invalid query parameters';
+      return res.status(400).json({ message: msg });
+    }
 
-    const [income, expenses] = await Promise.all([
-      Income.find({ user: userId }).lean(),
-      Expense.find({ user: userId }).lean()
-    ]);
-
-    console.log("USER ID:", userId);
-
-    console.log("INCOME SAMPLE:", income[0]);
-    console.log("EXPENSE SAMPLE:", expenses[0]);
-
-    const transactions = [
-      ...income.map(i => ({
-        _id: i._id,
-        type: 'income',
-        amount: i.amount,
-        description: i.reason || 'Income',
-        date: new Date(i.date ?? i.createdAt).toISOString()
-      })),
-
-      ...expenses.map(e => ({
-        _id: e._id,
-        type: 'expense',
-        amount: e.amount,
-        description: e.reason,
-        category: e.category,
-        classification: e.classification,
-        date: new Date(e.date ?? e.createdAt).toISOString()
-      }))
-    ];
-
-    transactions.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    const filter = buildTransactionListFilter(
+      new mongoose.Types.ObjectId(user._id.toString()),
+      listQuery
     );
 
-    return res.json({ transactions });
+    const transactions = await Transaction.find(filter).sort({ createdAt: -1 });
 
+    return res.json({ transactions });
   } catch (err) {
     next(err);
   }
