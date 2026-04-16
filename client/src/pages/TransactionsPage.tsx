@@ -49,7 +49,7 @@ const TransactionsPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getTransactions(appliedFilters);
+      const data = await getTransactions(appliedFilters, token);
       setTransactions(data);
     } catch (e: unknown) {
       const ax = e as { response?: { data?: { message?: string } } };

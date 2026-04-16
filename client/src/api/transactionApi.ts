@@ -25,6 +25,7 @@ export type TransactionFilters = {
 
 export const getTransactions = async (
   filters?: TransactionFilters,
+  token?: string
 ): Promise<Transaction[]> => {
   try {
     const [incomes, expenses] = await Promise.all([
@@ -35,8 +36,8 @@ export const getTransactions = async (
     const normalizedIncomes: Transaction[] = incomes.map((i: any) => ({
       _id: i._id || i.id,
       amount: i.amount,
-      description: i.description || "Income",
-      category: i.category,
+      description: i.reason || "Income",
+      category: i.category || "Income",
       createdAt: i.date,
       type: "income",
     }));
@@ -45,18 +46,23 @@ export const getTransactions = async (
       _id: e._id,
       amount: e.amount,
       description: e.reason || "Expense",
-      category: e.category,
+      category: e.category || "Expense",
       createdAt: e.date,
       type: "expense",
     }));
 
     let combined = [...normalizedIncomes, ...normalizedExpenses];
 
-    // ✅ Apply filters
     if (filters) {
       combined = combined.filter((tx) => {
-        if (filters.category?.trim() && tx.category !== filters.category) {
-          return false;
+        if (filters.category?.trim()) {
+          if (!tx.category) return false;
+
+          if (tx.category.toLowerCase() !==
+            filters.category.trim().toLowerCase()
+          ) {
+            return false;
+          }
         }
 
         if (filters.dateFrom && tx.createdAt < filters.dateFrom) {
@@ -91,7 +97,7 @@ export const getTransactions = async (
     return combined;
   } catch (error) {
     console.error("Failed to fetch transactions:", error);
-    return [];
+    throw error;
   }
 };
 
